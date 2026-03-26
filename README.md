@@ -2,14 +2,13 @@
 
 An interactive fintech web application that helps users build and analyze optimal stock portfolios using Modern Portfolio Theory. The app fetches real-time market data, computes risk-return metrics, and provides optimized investment allocations with interactive visualizations.
 
-## Overview
-
-This project demonstrates practical applications of financial economics, data analysis, and optimization techniques. Users can input stock symbols, choose a time horizon and risk preference, and receive an optimized portfolio based on quantitative methods.
-
-
 ## Live Application
 
 https://stock-portfolio-optimizer-ak.streamlit.app
+
+## Overview
+
+This project demonstrates practical applications of financial economics, data analysis, and optimization techniques. Users can input stock symbols, choose a time horizon and risk preference, and receive an optimized portfolio based on quantitative methods.
 
 
 ## Features
