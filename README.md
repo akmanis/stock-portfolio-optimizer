@@ -6,6 +6,12 @@ An interactive fintech web application that helps users build and analyze optima
 
 This project demonstrates practical applications of financial economics, data analysis, and optimization techniques. Users can input stock symbols, choose a time horizon and risk preference, and receive an optimized portfolio based on quantitative methods.
 
+
+## Live Application
+
+https://stock-portfolio-optimizer-ak.streamlit.app
+
+
 ## Features
 
 * Real-time stock data using Yahoo Finance
