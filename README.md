@@ -47,7 +47,7 @@ stock-portfolio-optimizer/
 1. Clone the repository:
 
 ```
-git clone https://github.com/YOUR_USERNAME/stock-portfolio-optimizer.git
+git clone https://github.com/akmanis/stock-portfolio-optimizer.git
 cd stock-portfolio-optimizer
 ```
 
