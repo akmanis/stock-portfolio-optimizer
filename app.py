@@ -1,10 +1,12 @@
 import streamlit as st
 import yfinance as yf
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.optimize import minimize
 import seaborn as sns
+
+# Plotly
+import plotly.graph_objects as go
 
 # PDF
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
@@ -13,7 +15,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-# ---------------- FONT FIX ----------------
+# ---------------- FONT ----------------
 pdfmetrics.registerFont(TTFont('DejaVu', 'DejaVuSans.ttf'))
 
 # ---------------- UI ----------------
@@ -70,17 +72,28 @@ if data is not None:
     else:
         st.write(data.tail())
 
-    # ---------------- CHART ----------------
-    st.subheader("Interactive Price Chart")
+    # ================= PLOTLY CHART =================
+    st.subheader("Price Chart")
 
     selected_stock = st.selectbox("Select Stock", stocks)
 
-    fig, ax = plt.subplots()
-    ax.plot(data.index, data[selected_stock])
-    ax.set_title(selected_stock)
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Price")
-    st.pyplot(fig)
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=data.index,
+        y=data[selected_stock],
+        mode='lines',
+        name=selected_stock
+    ))
+
+    fig.update_layout(
+        title=f"{selected_stock} Price",
+        xaxis_title="Date",
+        yaxis_title="Price",
+        hovermode="x unified"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
     # ---------------- RETURNS ----------------
     returns = data.pct_change().dropna()
@@ -122,15 +135,17 @@ if data is not None:
     df_weights = df_weights[df_weights["Weight (%)"] > 0.5]
 
     # ---------------- PIE ----------------
-    fig, ax = plt.subplots()
-    ax.pie(df_weights["Weight (%)"], labels=df_weights["Stock"],
-           autopct='%1.1f%%', startangle=90)
-    ax.axis('equal')
-
     st.subheader("Portfolio Allocation")
-    st.pyplot(fig)
 
-    # ---------------- TABLE DISPLAY ----------------
+    fig_pie = go.Figure(data=[go.Pie(
+        labels=df_weights["Stock"],
+        values=df_weights["Weight (%)"],
+        hole=0.3
+    )])
+
+    st.plotly_chart(fig_pie, use_container_width=True)
+
+    # ---------------- TABLE ----------------
     st.subheader("Investment Allocation")
     st.dataframe(df_weights, use_container_width=True)
 
@@ -157,21 +172,47 @@ if data is not None:
 
     results = np.array(results)
 
-    fig, ax = plt.subplots()
-    scatter = ax.scatter(results[:,1], results[:,0], c=results[:,2])
-    ax.scatter(risk, ret, color='red', s=100)
-    ax.set_xlabel("Risk")
-    ax.set_ylabel("Return")
-    st.pyplot(fig)
+    fig_mc = go.Figure()
+
+    fig_mc.add_trace(go.Scatter(
+        x=results[:,1],
+        y=results[:,0],
+        mode='markers',
+        marker=dict(color=results[:,2], colorscale='Viridis'),
+        name="Portfolios"
+    ))
+
+    fig_mc.add_trace(go.Scatter(
+        x=[risk],
+        y=[ret],
+        mode='markers',
+        marker=dict(color='red', size=10),
+        name="Optimal"
+    ))
+
+    fig_mc.update_layout(
+        xaxis_title="Risk",
+        yaxis_title="Return",
+        title="Monte Carlo Simulation"
+    )
+
+    st.plotly_chart(fig_mc, use_container_width=True)
 
     # ---------------- HEATMAP ----------------
     st.subheader("Risk-Return Heatmap")
 
-    fig, ax = plt.subplots()
-    sns.kdeplot(x=results[:,1], y=results[:,0], fill=True, cmap="viridis", ax=ax)
-    ax.set_xlabel("Risk")
-    ax.set_ylabel("Return")
-    st.pyplot(fig)
+    fig_hm = go.Figure(data=go.Histogram2d(
+        x=results[:,1],
+        y=results[:,0],
+        colorscale='Viridis'
+    ))
+
+    fig_hm.update_layout(
+        xaxis_title="Risk",
+        yaxis_title="Return"
+    )
+
+    st.plotly_chart(fig_hm, use_container_width=True)
 
     # ---------------- PDF ----------------
     pdf_file = "portfolio_report.pdf"
@@ -189,7 +230,7 @@ if data is not None:
     elements.append(Paragraph(f"Time Period: {time_range}", styles['Normal']))
     elements.append(Paragraph(f"Risk Level: {risk_level}", styles['Normal']))
     elements.append(Paragraph(f"Expected Return: {round(ret,4)}", styles['Normal']))
-    elements.append(Paragraph(f"Risk (Volatility): {round(risk,4)}", styles['Normal']))
+    elements.append(Paragraph(f"Risk: {round(risk,4)}", styles['Normal']))
     elements.append(Spacer(1, 20))
 
     table_data = [["Stock", "Weight (%)", "Investment (₹)"]]
@@ -212,10 +253,8 @@ if data is not None:
     ]))
 
     elements.append(table)
-
     doc.build(elements)
 
-    # ---------------- DOWNLOAD ----------------
     with open(pdf_file, "rb") as f:
         st.download_button(
             label="Download Report",
