@@ -18,6 +18,11 @@ from reportlab.pdfbase.ttfonts import TTFont
 # ---------------- FONT ----------------
 pdfmetrics.registerFont(TTFont('DejaVu', 'DejaVuSans.ttf'))
 
+st.set_page_config(
+    page_title="Stock Portfolio Optimizer", 
+    layout="wide"
+)
+
 # ---------------- UI ----------------
 st.title("Stock Portfolio Optimizer")
 
